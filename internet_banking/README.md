@@ -1,5 +1,5 @@
 # internet_banking
-cource project for distributed system
+source project for distributed system
 ### role:
 * 0 - main cus
 * 1 - phu cus
