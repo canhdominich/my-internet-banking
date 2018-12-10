@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Internet banking</title>
+    <meta charset="utf-8" />
+    <link href="/webjars/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    
+    <script src="/webjars/jquery/2.1.4/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/1.1.1/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/2.3.1/stomp.min.js"></script>
+    <script src="/app/app.js"></script>
+    <script src="/app/send_action.js"></script>
+    <script src="/app/view_action.js"></script>
+    
+</head>
+<body>
+<div id="main-content" class="container" style="background-color: #F2F2F2">
+    <!-- header -->
+			<div id="header" class="container-fullwidth">
+			  <div class="row">
+			    <nav class="navbar navbar-inverse" role="navigation"
+			      style="margin-bottom: 0px;">
+			    <div class="container">
+			      <div class="navbar-header">
+			        <button type="button" class="navbar-toggle" data-toggle="collapse"
+			          data-target=".navbar-ex1-collapse">
+			          <span class="sr-only">Toggle navigation</span> <span
+			            class="icon-bar"></span> <span class="icon-bar"></span> <span
+			            class="icon-bar"></span>
+			        </button>
+			      </div>
+			      <div class="collapse navbar-collapse navbar-ex1-collapse">
+			        <ul class="nav navbar-nav js-nav-add-active-class">
+				          <li><a id="header-home" href="#">Trang chủ</a></li>
+				          <li><a id="header-info" href="#">Thông tin tài khoản</a></li>
+				          <li><a id="header-withdraw" href="#">Rút tiền</a></li>
+				          <li><a id="header-deposit" href="#">Gửi tiền</a></li> 
+				          <li><a id="header-create-account" href="#">Tạo tài khoản</a></li>
+				          <li><a id="header-add-cus-2-account" href="#">Thêm chủ thẻ vào tài khoản</a></li>
+				          <li><a id="header-active" href="#">Hủy / Kích hoạt tài khoản</a></li>
+			        </ul>
+			        <ul class="nav navbar-nav navbar-right hidden-xs" >
+			            <button id="cus-logout" class="btn btn-default btn-primary" type="button">Đăng xuất</button>
+			        </ul>
+			      </div>
+			    </div>
+			    </nav>
+			  </div>
+			</div>
+    <!-- end header -->
+    
+    <!-- Login page -->
+    
+    <div id="main_login" class="row" style="padding-top: 200px">
+        <div class="col-md-12">
+            <div class="col-md-6">
+	            <div id="anounce"><h3>Tên đăng nhập hoặc mật khẩu không chính xác !</h3></div>
+	            <form class="form">
+	                <div class="form-group">
+	                    <label for="username">Tên đăng nhập</label>
+	                    <input type="text" name="username" id="username" class="form-control" placeholder="username...">
+	                    <label for="password">Mật khẩu</label>
+	                    <input type="text" name="password" id="password" class="form-control" placeholder="password...">
+	                </div>
+	                <button id="login" class="btn btn-default" type="button">Login</button>
+	            </form>
+        	</div>
+        </div>
+    </div>
+    <!-- end login page -->
+    
+    <!-- Active and Deactive -->
+    <div id="banker-active" class="row" style="padding-top: 20px">
+      <div class="col-md-4 col-md-offset-4">
+        <form role="form" method="post" action="WithdrawServlet">
+          <h2>Hủy / Kích hoạt tài khoản</h2>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+
+          <label class="col-md-4 control-label">Tên đăng nhập</label>
+          <div class="col-sm-8 form-group">
+            <input type="text" required placeholder="Enter username.."
+              name="password" class="form-control" id="active-username">
+          </div>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          <div id="banker-active-annount" class="col-md-12" style="display:none">
+            <div class="alert alert-danger" role="alert">
+              <strong>Xin lỗi!</strong> Tên đăng nhập không tồn tại !.
+            </div>
+          </div>
+          <div class="row col-md-10 col-md-offset-1">
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-active" type="button" value="Kích hoạt"
+                class="btn btn-success btn-block btn-md" tabindex="7">
+            </div>
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-de-active" class="btn btn-danger btn-block btn-md" type="button"
+                value="Hủy kích hoạt">
+            </div>
+          </div>
+        </form>
+        </div>
+    </div>
+    
+    <!-- END Active and Deactive -->
+    
+    <!-- Withdraw -->
+    <div id="cus-withdraw" class="row" style="padding-top: 20px">
+    <div class="col-md-4 col-md-offset-4">
+        <form role="form" method="post" action="WithdrawServlet" id="form-withdraw">
+          <h2>Rút tiền</h2>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+
+          <label class="col-md-4 control-label">Mật khẩu</label>
+          <div class="col-sm-8 form-group">
+            <input type="password" required placeholder="Enter Password.."
+              name="password" class="form-control" id="withdraw-password">
+          </div>
+          <label class="col-md-4 control-label">Số tiền</label>
+          <div class="col-sm-8 form-group">
+            <input type="number" required placeholder="Enter Amount.."
+              class="form-control" name="amount" id="withdraw-amount">
+          </div>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          <div id="cus-withdraw-not-enough-money" class="col-md-12" style="display:none">
+            <div class="alert alert-danger" role="alert">
+              <strong>Xin lỗi!</strong> Số tiền bạn định rút vượt quá số dư tài khoản.
+            </div>
+          </div>
+          <div id="cus-withdraw-password-fail" class="col-md-12" style="display:none">
+            <div class="alert alert-danger" role="alert">
+              <strong>Xin lỗi!</strong> Mật khẩu nhập vào không đúng.
+            </div>
+          </div>
+          <div class="row col-md-10 col-md-offset-1">
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-withdraw" type="button" value="Submit"
+                class="btn btn-success btn-block btn-md" tabindex="7">
+            </div>
+            <div class="col-xs-6 col-md-6">
+              <input class="btn btn-danger btn-block btn-md" type="reset"
+                value="Reset">
+            </div>
+          </div>
+        </form>
+      </div>
+    
+    </div>
+    <!-- End Withdraw -->
+    
+    <!-- Deposit -->
+    <div id="banker-deposit" class="row" style="padding-top: 20px">
+    <div class="col-md-4 col-md-offset-4">
+        <form role="form" method="post" id="form-deposit">
+          <h2>Gửi tiền vào tài khoản</h2>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+
+          <label class="col-md-4 control-label">Số tài khoản</label>
+          <div class="col-sm-8 form-group">
+              <input type="number" required placeholder="Enter account no.."
+                  class="form-control" id="deposit-ac_no">
+          </div>
+          
+          <label class="col-md-4 control-label">Tên đăng nhập</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter username.."
+                  class="form-control" id="deposit-username">
+          </div>
+          
+          <label class="col-md-4 control-label">Số tiền</label>
+          <div class="col-sm-8 form-group">
+            <input type="number" required placeholder="Enter Amount.."
+              class="form-control" id="deposit-amount">
+          </div>
+          
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          <div id="banker-deposit-fail" class="col-md-12" style="display:none">
+            <div class="alert alert-danger" role="alert">
+              <strong>Xin lỗi!</strong> Username và số tài khoản không khớp.
+            </div>
+          </div>
+
+          <div class="row col-md-10 col-md-offset-1">
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-deposit" type="button" value="Submit"
+                class="btn btn-success btn-block btn-md" tabindex="7">
+            </div>
+            <div class="col-xs-6 col-md-6">
+              <input class="btn btn-danger btn-block btn-md" type="reset"
+                value="Reset">
+            </div>
+          </div>
+        </form>
+      </div>
+    
+    </div>
+    <!-- End Deposit -->
+    
+    <!-- Create new Account -->
+    <div id="banker-create-account" class="row" style="padding-top: 20px">
+    <div class="col-md-4 col-md-offset-4">
+        <form role="form" method="post" id="form-create-account">
+          <h2>Tạo mới tài khoản</h2>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+
+          <label class="col-md-4 control-label">Tên đăng nhập</label>
+          <div class="col-sm-8 form-group">
+	            <input type="text" required placeholder="Enter Username.."
+                  class="form-control" id="new-username">
+          </div>
+          
+          <label class="col-md-4 control-label">Mật khẩu</label>
+          <div class="col-sm-8 form-group">
+            <input type="password" required placeholder="Enter Password.."
+              class="form-control" id="new-password">
+          </div>
+          
+          <label class="col-md-4 control-label">Email</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter Email.."
+                  class="form-control" id="new-email">
+          </div>
+          
+          <label class="col-md-4 control-label">Số điện thoại</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter phone.."
+                  class="form-control" id="new-phone">
+          </div>
+          
+          <label class="col-md-4 control-label">Tên</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter firstname.."
+                  class="form-control" id="new-first_name">
+          </div>
+          
+          <label class="col-md-4 control-label">Họ</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter lastname.."
+                  class="form-control" id="new-last_name">
+          </div>
+          
+          <label class="col-md-4 control-label">Giới tính</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter gender.."
+                  class="form-control" id="new-gender">
+          </div>
+          
+          <label class="col-md-4 control-label">Địa chỉ</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter address.."
+                  class="form-control" id="new-address">
+          </div>
+          
+          <label class="col-md-4 control-label">Ngày sinh</label>
+          <div class="col-sm-8 form-group">
+              <input type="date" required
+                  class="form-control" id="new-birthday">
+          </div>
+          
+          <label class="col-md-4 control-label">Số dư</label>
+          <div class="col-sm-8 form-group">
+              <input type="number" required placeholder="Enter balance..."
+                  class="form-control" name="balance" id="new-balance">
+          </div>
+          
+          
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          <div class="row col-md-10 col-md-offset-1">
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-create-account" type="button" value="Submit"
+                class="btn btn-success btn-block btn-md" tabindex="7">
+            </div>
+            <div class="col-xs-6 col-md-6">
+              <input class="btn btn-danger btn-block btn-md" type="reset"
+                value="Reset">
+            </div>
+          </div>
+        </form>
+      </div>
+    
+    </div>
+    <!-- End Create new Account -->
+    
+    <!-- Add new user to Account -->
+    <div id="banker-add-user-2-account" class="row" style="padding-top: 20px">
+    <div class="col-md-4 col-md-offset-4">
+        <form role="form" method="post" id="form-add-user-2-account">
+          <h2>Thêm người dùng cho tài khoản</h2>
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          
+          <label class="col-md-4 control-label">Số tài khoản</label>
+          <div class="col-sm-8 form-group">
+              <input type="number" required placeholder="Enter account no.."
+                  class="form-control" id="add-ac_no">
+          </div>
+
+          <label class="col-md-4 control-label">Tên đăng nhập</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter Username.."
+                  class="form-control" id="add-username">
+          </div>
+          
+          <label class="col-md-4 control-label">Mật khẩu</label>
+          <div class="col-sm-8 form-group">
+            <input type="password" required placeholder="Enter Password.."
+              class="form-control" id="add-password">
+          </div>
+          
+          <label class="col-md-4 control-label">Email</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter Email.."
+                  class="form-control" id="add-email">
+          </div>
+          
+          <label class="col-md-4 control-label">Số điện thoại</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter phone.."
+                  class="form-control" id="add-phone">
+          </div>
+          
+          <label class="col-md-4 control-label">Tên</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter firstname.."
+                  class="form-control" id="add-first_name">
+          </div>
+          
+          <label class="col-md-4 control-label">Họ</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter lastname.."
+                  class="form-control" id="add-last_name">
+          </div>
+          
+          <label class="col-md-4 control-label">Giới tính</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter gender.."
+                  class="form-control" id="add-gender">
+          </div>
+          
+          <label class="col-md-4 control-label">Địa chỉ</label>
+          <div class="col-sm-8 form-group">
+              <input type="text" required placeholder="Enter address.."
+                  class="form-control" id="add-address">
+          </div>
+          
+          <label class="col-md-4 control-label">Ngày sinh</label>
+          <div class="col-sm-8 form-group">
+              <input type="date" required
+                  class="form-control" id="add-birthday">
+          </div>
+                    
+          
+          <div class="col-md-12">
+            <hr class="colorgraph">
+          </div>
+          <div class="row col-md-10 col-md-offset-1">
+            <div class="col-xs-6 col-md-6">
+              <input id="btn-add-user-2-account" type="button" value="Submit"
+                class="btn btn-success btn-block btn-md" tabindex="7">
+            </div>
+            <div class="col-xs-6 col-md-6">
+              <input class="btn btn-danger btn-block btn-md" type="reset"
+                value="Reset">
+            </div>
+          </div>
+        </form>
+      </div>
+    
+    </div>
+    <!-- End Add new user 2 Account -->
+    
+    <!-- infor customer -->
+    <div id="cus-information" class="row" style="padding-top: 20px">
+      <table class="table table-striped">
+			  <tbody>
+			    <tr>
+			      <th scope="row">Số tài khoản</th>
+			      <td id="cus-ac_no"></td>
+			    </tr>
+			    <tr>
+			      <th scope="row">Số dư</th>
+			      <td id="cus-balance"></td>
+			    </tr>
+			    <tr>
+			      <th scope="row">Ngày mở</th>
+			      <td id="cus-open_date"></td>
+			    </tr>
+			  </tbody>
+			</table>
+    </div>
+    <!-- end infor customer -->
+    
+    <!-- Customer pages -->
+    <div id="main_cus" class="row" style="padding-top: 20px">
+        <table class="table table-striped">
+        <tbody>
+          <tr>
+            <th scope="row">Họ tên</th>
+            <td id="cus-home-name"></td>
+          </tr>
+          <tr>
+            <th scope="row">Ngày sinh</th>
+            <td id="cus-birthday"></td>
+          </tr>
+          <tr>
+            <th scope="row">Địa chỉ</th>
+            <td id="cus-address"></td>
+          </tr>
+          <tr>
+            <th scope="row">Số tài khoản</th>
+            <td id="cus-home-no"></td>
+          </tr>
+          <tr>
+            <th scope="row">Ngày tạo</th>
+            <td id="cus-home-open-date"></td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+    
+    <!-- end customer pages -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Bank pages -->
+    <div id="main_banker" class="row" style="padding-top: 20px">
+        <div class="col-md-12">
+             <h2>Hệ thống internet banking</h2>
+             <h3>Trang dành cho ngân hàng</h3>
+        </div>
+    </div>
+    
+    
+    
+    <!-- end bank page -->
+    
+    
+    
+    <!-- footer -->
+    
+    <!-- end footer -->
+</div>
+</body>
+</html>
